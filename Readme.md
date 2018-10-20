@@ -61,7 +61,9 @@ inspect folder (`target/**`)
 
 ## hook maven up with nexus repository
 
- 1. `.m2/settings.xml`:
+ 1. locally on your PC: 
+
+ `.m2/settings.xml`:
  
  ```
  <settings>
@@ -134,24 +136,21 @@ inspect folder (`target/**`)
 2. `mvn clean package -U`
 
 
-# Git
-
-1. messing around with git (aka create a git repo)
-
-
 # Jenkins
 
 ## install and configure jenkins
 
+0. assumptions: you already have `git` and `openjdk-8-headless` installed on the system
 1. download jenkins (https://jenkins.io/download/), select `Java Package .war`)
 2. `java -jar jenkins.war` (or if port is blocked, specify another one with the `--httpPort=4711` flag)
 3. localhost:8080
 4. enter initial admin password (autom. generated, from console)
 5. configure proxy (if needed) and select 'install suggested plugins'
 6. create admin user
-
 7. inspect
 8. install maven (`apt-get install maven`)
+9. configure Jenkins to use the Nexus Server:
+ - place `settings.xml` (from above) to `/var/lib/jenkins/.m2`
 
 ## configure build pipeline
 
@@ -169,10 +168,8 @@ pipeline {
         }
         stage('Test'){
             steps {
-                sh 'mvn test pmd:pmd'
+                sh 'mvn test'
                 junit 'target/surefire-reports/*.xml' 
-                pmd canRunOnFailed: true, pattern: 'target/pmd.xml'
-                
             }
         }
         stage('Deploy') {
@@ -190,37 +187,13 @@ pipeline {
 4. Enter git path/credentials (Branch resources), adjust scan trigger (periodically every x minutes) and save
 5. Now you're ready - inspect the build
 
-6. pmd: 
-
-``` 
-   <reporting>
-        <plugins>
-            <plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
-            	<artifactId>maven-pmd-plugin</artifactId>
-            	<version>2.7.1</version>
-            	<configuration>
-                	<linkXRef>false</linkXRef>
-                	<targetJdk>1.8</targetJdk>
-                	<rulesets>
-                    		<ruleset>/rulesets/basic.xml</ruleset>
-                	</rulesets>
-            	</configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-```
-
-7. plugins `blueocean`, `static analysis collector` and `pmd` plugin
-8. configure pmd in step
-9. provoke a warning ;)
-
 ## configure release pipeline
 
-e.g. a maven type project which performs `-B release:prepare -B release:perform`
+1. select the maven project
+2. execute `-B release:prepare -B release:perform`
 
 
-## future extension
+## future extensions
 
 https://medium.com/@MichaKutz/create-a-declarative-pipeline-jenkinsfile-for-maven-releasing-1d43c896880c
 
